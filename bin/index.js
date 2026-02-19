@@ -39,6 +39,13 @@ async function main() {
                     const time = chalk.cyan.dim(new Date(item.time).toLocaleDateString());
                     console.log(chalk.cyan(`${i + 1}: ${item.text} ${status} ${time}`))
                 });
+
+                await select({
+                    message: chalk.cyan.dim('. . .'),
+                    options: [
+                        {value: 'back.', label: chalk.cyan('Done.')}
+                    ]
+                });
             }
         }
 
@@ -65,12 +72,18 @@ async function main() {
             } else {
                 const index = await select({
                     message: chalk.cyan('Which todo to remove?'),
-                    options: todo.map((item, i) => ({
-                        value: i,
-                        label: chalk.cyan(`${item.text} ${item.done ? chalk.green("[x]") : chalk.red("[]")}`)
-                    }))
+                    options: [ 
+                        ...todo.map((item, i) => ({
+                            value: i,
+                            label: chalk.cyan(`${item.text} ${item.done ? chalk.green("[x]") : chalk.red("[]")}`)
+                        })),
+                        {value: 'back', label: chalk.cyan('Back.')}
+                    ]
                 });
 
+                if (index === 'back') {
+                    continue;
+                }
                 todo.splice(index, 1);
                 saveTodo(todo);
 
@@ -85,16 +98,23 @@ async function main() {
             } else {
                 const index = await select({
                     message: chalk.cyan('Which todo to edit?'),
-                    options: todo.map((item, i) => ({
-                        value: i,
-                        label: chalk.cyan(`${item.text} ${item.done ? chalk.green("[x]") : chalk.red("[]")}`)
-                    }))
+                    options: [
+                        ...todo.map((item, i) => ({
+                            value: i,
+                            label: chalk.cyan(`${item.text} ${item.done ? chalk.green("[x]") : chalk.red("[]")}`)
+                        })),
+                        {value: 'back', label: chalk.cyan('Back.')}
+                    ]
                 });
+
+                if (index === 'back') {
+                    continue;
+                }
 
                 const edit = await inputWithPrefill(chalk.cyan('Edit todo: '), todo[index].text);
                 todo[index].text = edit;
                 saveTodo(todo);
-                console.log(chalk.yellow('Todo edited.'));
+                console.log(chalk.cyan('Todo edited.'));
             }
         }
 
