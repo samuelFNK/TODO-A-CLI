@@ -7,7 +7,9 @@ import { inputWithPrefill } from '../lib/helpers.js';
 
 
 async function main() {
+    
     intro(chalk.cyan('TODO-A-CLI'));
+
     let loop = true;
     while(loop){
         
@@ -26,13 +28,18 @@ async function main() {
 
         const todo = loadTodo();
 
-        if (action === 'view') {
-            console.log(chalk.cyan('TODO:'));
 
-            todo.forEach((item, i) => {
-                const status = item.done ? chalk.green("[x]") : chalk.red("[]");
-                console.log(chalk.cyan(`${i + 1}: ${item.text} ${status}`))
-            });
+        if (action === 'view') {
+
+            if (todo.length === 0) {
+                console.log(chalk.red('Theres nothing TODO.'));
+            } else {
+                todo.forEach((item, i) => {
+                    const status = item.done ? chalk.green.bold("[x]") : chalk.red.bold("[]");
+                    const time = chalk.cyan.dim(new Date(item.time).toLocaleDateString());
+                    console.log(chalk.cyan(`${i + 1}: ${item.text} ${status} ${time}`))
+                });
+            }
         }
 
 
@@ -43,7 +50,8 @@ async function main() {
 
             todo.push({
                 text: newItem,
-                done: false
+                done: false,
+                time: new Date().toISOString()
             });
             saveTodo(todo);
 
@@ -59,7 +67,7 @@ async function main() {
                     message: chalk.cyan('Which todo to remove?'),
                     options: todo.map((item, i) => ({
                         value: i,
-                        label: item.text
+                        label: chalk.cyan(`${item.text} ${item.done ? chalk.green("[x]") : chalk.red("[]")}`)
                     }))
                 });
 
@@ -79,7 +87,7 @@ async function main() {
                     message: chalk.cyan('Which todo to edit?'),
                     options: todo.map((item, i) => ({
                         value: i,
-                        label: item.text
+                        label: chalk.cyan(`${item.text} ${item.done ? chalk.green("[x]") : chalk.red("[]")}`)
                     }))
                 });
 
@@ -152,7 +160,7 @@ async function main() {
 
     }
 
-    outro(chalk.cyan('A-CLI-WAS-DONE'));
+    outro(chalk.cyan('CLI-BYE'));
 }
 
 main();
