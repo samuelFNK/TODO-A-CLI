@@ -12,6 +12,8 @@ async function main() {
         message: 'What todo?',
         options: [
             {value: 'view', label: 'View todo list.'},
+            {value: 'mark done', label: 'Mark todo as done.'},
+            {value: 'mark unfinished', label: 'Mark todo as unfinished.'},
             {value: 'add', label: 'Add something todo.'},
             {value: 'edit', label: 'Edit existing todo.'},
             {value: 'remove', label: 'Remove a todo.'},
@@ -23,7 +25,11 @@ async function main() {
 
     if (action === 'view') {
         console.log('TODO:');
-        todo.forEach((item, i) => console.log(`${i + 1}. ${item}`));
+
+        todo.forEach((item, i) => {
+            const status = item.done ? "[x]" : "[]";
+            console.log(`${i + 1}: ${item.text} ${status}`)
+        });
     }
 
 
@@ -32,7 +38,10 @@ async function main() {
             message: 'What would you like todo?'
         });
 
-        todo.push(newItem);
+        todo.push({
+            text: newItem,
+            done: false
+        });
         saveTodo(todo);
 
         console.log('Added.')
@@ -47,7 +56,7 @@ async function main() {
                 message: 'Which todo to remove?',
                 options: todo.map((item, i) => ({
                     value: i,
-                    label: item
+                    label: item.text
                 }))
             });
 
@@ -67,14 +76,59 @@ async function main() {
                 message: 'Which todo to edit?',
                 options: todo.map((item, i) => ({
                     value: i,
-                    label: item
+                    label: item.text
                 }))
             });
 
-            const edit = await inputWithPrefill('Edit todo: ', todo[index]);
-            todo[index] = edit;
+            const edit = await inputWithPrefill('Edit todo: ', todo[index].text);
+            todo[index].text = edit;
             saveTodo(todo);
             console.log('Todo edited.');
+        }
+    }
+
+    if (action == 'done') {
+        if (todo.length === 0) {
+            console.log('No todos to mark.');
+        } else {
+
+            const index = await select({
+                message: 'Which todo to mark done?',
+                options: todo.map((item, i) => ({
+                    value: i,
+                    label: item.text
+                }))
+            });
+
+            todo[index].done = true;
+            saveTodo(todo);
+
+            console.log('Done!');
+        }
+    }
+
+
+    if (action == 'not done') {
+        if (todo.length === 0) {
+            console.log('No todos to mark.');
+        } else {
+
+            const index = await select({
+                message: 'Which todo to mark unfinished?',
+                options: todo.map((item, i) => ({
+                    value: i,
+                    label: item.text
+                }))
+            });
+
+            if (todo[index].done === false) {
+                console.log('This todo is already marked as unfinished.')    
+            } else {
+                todo[index].done = false;
+                saveTodo(todo);
+                console.log('Undone!');
+            }
+            
         }
     }
 
