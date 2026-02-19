@@ -1,139 +1,158 @@
 #!/usr/bin/env node
 
-import {intro, outro, select, text} from '@clack/prompts';
+import {intro, outro, select, text, isCancel, cancel} from '@clack/prompts';
+import chalk from 'chalk';
 import { loadTodo, saveTodo } from '../lib/db.js';
 import { inputWithPrefill } from '../lib/helpers.js';
 
 
 async function main() {
-    intro('TODO-A-CLI');
-
-    const action = await select({
-        message: 'What todo?',
-        options: [
-            {value: 'view', label: 'View todo list.'},
-            {value: 'mark done', label: 'Mark todo as done.'},
-            {value: 'mark unfinished', label: 'Mark todo as unfinished.'},
-            {value: 'add', label: 'Add something todo.'},
-            {value: 'edit', label: 'Edit existing todo.'},
-            {value: 'remove', label: 'Remove a todo.'},
-            {value: 'exit', label: 'Leave.'}
-        ]
-    });
-
-    const todo = loadTodo();
-
-    if (action === 'view') {
-        console.log('TODO:');
-
-        todo.forEach((item, i) => {
-            const status = item.done ? "[x]" : "[]";
-            console.log(`${i + 1}: ${item.text} ${status}`)
-        });
-    }
-
-
-    if (action === 'add') {
-        const newItem = await text({
-            message: 'What would you like todo?'
+    intro(chalk.cyan('TODO-A-CLI'));
+    let loop = true;
+    while(loop){
+        
+        const action = await select({
+            message: chalk.cyan('What todo?'),
+            options: [
+                {value: 'view', label: chalk.cyan('View todo list.')},
+                {value: 'done', label: chalk.cyan('Mark todo as done.')},
+                {value: 'not done', label: chalk.cyan('Mark todo as not done.')},
+                {value: 'add', label: chalk.cyan('Add something todo.')},
+                {value: 'edit', label: chalk.cyan('Edit existing todo.')},
+                {value: 'remove', label: chalk.cyan('Remove a todo.')},
+                {value: 'leave', label: chalk.cyan('Leave.')}
+            ]
         });
 
-        todo.push({
-            text: newItem,
-            done: false
-        });
-        saveTodo(todo);
+        const todo = loadTodo();
 
-        console.log('Added.')
-    }
+        if (action === 'view') {
+            console.log(chalk.cyan('TODO:'));
+
+            todo.forEach((item, i) => {
+                const status = item.done ? chalk.green("[x]") : chalk.red("[]");
+                console.log(chalk.cyan(`${i + 1}: ${item.text} ${status}`))
+            });
+        }
 
 
-    if (action === 'remove') {
-        if (todo.length === 0) {
-            console.log('No todos to remove.');
-        } else {
-            const index = await select({
-                message: 'Which todo to remove?',
-                options: todo.map((item, i) => ({
-                    value: i,
-                    label: item.text
-                }))
+        if (action === 'add') {
+            const newItem = await text({
+                message: chalk.cyan('What would you like todo?')
             });
 
-            todo.splice(index, 1);
+            todo.push({
+                text: newItem,
+                done: false
+            });
             saveTodo(todo);
 
-            console.log('Todo removed.');
+            console.log(chalk.cyan('Added.'))
         }
-    }
 
 
-    if (action === 'edit') {
-        if (todo.length === 0) {
-            console.log('No todos to edit.');
-        } else {
-            const index = await select({
-                message: 'Which todo to edit?',
-                options: todo.map((item, i) => ({
-                    value: i,
-                    label: item.text
-                }))
-            });
-
-            const edit = await inputWithPrefill('Edit todo: ', todo[index].text);
-            todo[index].text = edit;
-            saveTodo(todo);
-            console.log('Todo edited.');
-        }
-    }
-
-    if (action == 'done') {
-        if (todo.length === 0) {
-            console.log('No todos to mark.');
-        } else {
-
-            const index = await select({
-                message: 'Which todo to mark done?',
-                options: todo.map((item, i) => ({
-                    value: i,
-                    label: item.text
-                }))
-            });
-
-            todo[index].done = true;
-            saveTodo(todo);
-
-            console.log('Done!');
-        }
-    }
-
-
-    if (action == 'not done') {
-        if (todo.length === 0) {
-            console.log('No todos to mark.');
-        } else {
-
-            const index = await select({
-                message: 'Which todo to mark unfinished?',
-                options: todo.map((item, i) => ({
-                    value: i,
-                    label: item.text
-                }))
-            });
-
-            if (todo[index].done === false) {
-                console.log('This todo is already marked as unfinished.')    
+        if (action === 'remove') {
+            if (todo.length === 0) {
+                console.log(chalk.red('No todos to remove.'));
             } else {
-                todo[index].done = false;
+                const index = await select({
+                    message: chalk.cyan('Which todo to remove?'),
+                    options: todo.map((item, i) => ({
+                        value: i,
+                        label: item.text
+                    }))
+                });
+
+                todo.splice(index, 1);
                 saveTodo(todo);
-                console.log('Undone!');
+
+                console.log(chalk.cyan('Todo removed.'));
             }
-            
         }
+
+
+        if (action === 'edit') {
+            if (todo.length === 0) {
+                console.log(chalk.red('No todos to edit.'));
+            } else {
+                const index = await select({
+                    message: chalk.cyan('Which todo to edit?'),
+                    options: todo.map((item, i) => ({
+                        value: i,
+                        label: item.text
+                    }))
+                });
+
+                const edit = await inputWithPrefill(chalk.cyan('Edit todo: '), todo[index].text);
+                todo[index].text = edit;
+                saveTodo(todo);
+                console.log(chalk.yellow('Todo edited.'));
+            }
+        }
+
+        if (action === 'done') {
+            if (todo.length === 0) {
+                console.log(chalk.red('No todos to mark.'));
+            } else {
+
+                const index = await select({
+                    message: chalk.cyan('Which todo to mark done?'),
+                    options: todo.map((item, i) => ({
+                        value: i,
+                        label: item.text
+                    }))
+                });
+
+                if (todo[index].done === true) {
+                    console.log(chalk.red('This todo is already marked as done.'));
+                } else {
+                    todo[index].done = true;
+                    saveTodo(todo);
+                    console.log(chalk.green('Done!'));
+                }
+            }
+        }
+
+
+        if (action === 'not done') {
+            if (todo.length === 0) {
+                console.log(chalk.red('No todos to mark.'));
+            } else {
+
+                const index = await select({
+                    message: chalk.cyan('Which todo to mark not done?'),
+                    options: todo.map((item, i) => ({
+                        value: i,
+                        label: item.text
+                    }))
+                });
+
+                if (todo[index].done === false) {
+                    console.log(chalk.red('This todo is already marked as not done.'))    
+                } else {
+                    todo[index].done = false;
+                    saveTodo(todo);
+                    console.log(chalk.cyan('Undone!'));
+                }
+                
+            }
+        }
+
+
+        if (action === 'leave') {
+            console.log(chalk.cyan('Leaving.'))
+            loop = false;
+        }
+
+
+        if (isCancel(action)) {
+            cancel(chalk.cyan('Leaving.'));
+            process.exit(0);
+        }
+
     }
 
-
-    outro('A-CLI-WAS-DONE');
+    outro(chalk.cyan('A-CLI-WAS-DONE'));
 }
 
 main();
