@@ -1,0 +1,26 @@
+{
+  "name": "todo-a-cli",
+  "version": "1.0.0",
+  "main": "index.js",
+  "bin": {
+    "todo": "./bin/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samuelFNK/TODO-A-CLI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/samuelFNK/TODO-A-CLI/issues"
+  },
+  "homepage": "https://github.com/samuelFNK/TODO-A-CLI#readme",
+  "description": "",
+  "dependencies": {
+    "@clack/prompts": "^1.0.1"
+  }
+}
