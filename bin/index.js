@@ -2,6 +2,7 @@
 
 import {intro, outro, select, text} from '@clack/prompts';
 import { loadTodo, saveTodo } from '../lib/db.js';
+import { inputWithPrefill } from '../lib/helpers.js';
 
 
 async function main() {
@@ -12,6 +13,7 @@ async function main() {
         options: [
             {value: 'view', label: 'View todo list.'},
             {value: 'add', label: 'Add something todo.'},
+            {value: 'edit', label: 'Edit existing todo.'},
             {value: 'remove', label: 'Remove a todo.'},
             {value: 'exit', label: 'Leave.'}
         ]
@@ -56,7 +58,27 @@ async function main() {
         }
     }
 
-    
+
+    if (action === 'edit') {
+        if (todo.length === 0) {
+            console.log('No todos to edit.');
+        } else {
+            const index = await select({
+                message: 'Which todo to edit?',
+                options: todo.map((item, i) => ({
+                    value: i,
+                    label: item
+                }))
+            });
+
+            const edit = await inputWithPrefill('Edit todo: ', todo[index]);
+            todo[index] = edit;
+            saveTodo(todo);
+            console.log('Todo edited.');
+        }
+    }
+
+
     outro('A-CLI-WAS-DONE');
 }
 
